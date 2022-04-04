@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Web;
 
 class ServidorHttp
 {
@@ -136,6 +137,16 @@ class ServidorHttp
 
                 string textoParametros = recursoBuscado.Contains("?") ? recursoBuscado.Split("?")[1] : "";
                 SortedList<string, string> parametros = ProcessarParametros(textoParametros);
+
+                string dadosPost = TextoRequisicao.Contains("\r\n\r\n") ? TextoRequisicao.Split("\r\n\r\n")[1] : "";
+                if (!string.IsNullOrEmpty(dadosPost))
+                {
+                    dadosPost = HttpUtility.UrlDecode(dadosPost, Encoding.UTF8);
+                    var parametrosPost = ProcessarParametros(dadosPost);
+
+                    foreach (var pp in parametrosPost)
+                        parametros.Add(pp.Key, pp.Value);
+                }
 
                 recursoBuscado = recursoBuscado.Split("?")[0];
 
