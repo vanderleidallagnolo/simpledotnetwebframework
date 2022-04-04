@@ -8,13 +8,13 @@ Código extraído de seus vídeos no canal:
 
 https://www.youtube.com/channel/UCB0-PxBvklzZsCh6U_rIzAw
 
-A primeira parte deste programa está no repositório abaixo:
-
-https://github.com/vanderleidallagnolo/simplehttpserver
-
 Conforme aulas 3 do tutorial
 
 https://www.youtube.com/watch?v=JoNEj1Q-0xw
+
+A implementação referente às aulas 1 e 2 está no repositório abaixo:
+
+https://github.com/vanderleidallagnolo/simplehttpserver
 
 ## Referências importantes
 
