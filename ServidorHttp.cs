@@ -121,7 +121,7 @@ class ServidorHttp
                 // mostra texto da requisição - o que está chegando no servidor
                 // o texto mostrado é a requisição Http sendo feita pelo navegador do usuário
                 Console.WriteLine($"\n{TextoRequisicao}\n");
-                Console.WriteLine($"\nApós o TextoRequisicao\n");
+                Console.WriteLine($"\nAQUI 1- Após o TextoRequisicao\n");
 
 
                 string[] linhas = TextoRequisicao.Split("\r\n");
@@ -150,6 +150,8 @@ class ServidorHttp
                 // objeto completo para listar informações a respeito do arquivo
                 FileInfo fiArquivo = new FileInfo(ObterCaminhoFisicoArquivo(nomeHost, recursoBuscado));
 
+                Console.WriteLine($"\nAQUI 2 - {fiArquivo}\n");
+
                 if (fiArquivo.Exists)
                 {
                     // verificando se a lista de tipos MIME suportado contém a extensão do arquivo suportado pelo navegador
@@ -159,7 +161,7 @@ class ServidorHttp
 
                         if (fiArquivo.Extension.ToLower() == ".dhtml")
                         {
-                            bytesConteudo = GerarHTMLDinamico(fiArquivo.FullName, parametros );
+                            bytesConteudo = GerarHTMLDinamico(fiArquivo.FullName, parametros, metodoHttp );
                         }
                         else
                         {
@@ -249,8 +251,8 @@ class ServidorHttp
     {
 
         this.DiretoriosHosts = new SortedList<string, string>();
-        this.DiretoriosHosts.Add("localhost","C:\\VSCode\\simplehttpserver\\www\\localhost");
-        this.DiretoriosHosts.Add("maroquio.com","C:\\VSCode\\simplehttpserver\\www\\maroquio.com");
+        this.DiretoriosHosts.Add("localhost","C:\\VSCode\\simpledotnetwebframework\\www\\localhost");
+        this.DiretoriosHosts.Add("maroquio.com","C:\\VSCode\\simpledotnetwebframework\\www\\maroquio.com");
         this.DiretoriosHosts.Add("quitandaonline.com.br","C:\\Youtube\\QuintandaOnline");
 
     } // end private void PopularDiretoriosHosts()
@@ -262,48 +264,36 @@ class ServidorHttp
         return caminhoArquivo;
     }
 
-    public byte[] GerarHTMLDinamico(string caminhoArquivo, SortedList<string, string> parametros)
+    public byte[] GerarHTMLDinamico(string caminhoArquivo, SortedList<string, string> parametros, string metodoHttp)
     {
-        string coringa = "{{HtmlGerado}}";
-        string htmlModelo = File.ReadAllText(caminhoArquivo);
 
-        StringBuilder htmlGerado = new StringBuilder();
-/*
-        htmlGerado.Append("<ul>");
+        FileInfo fiArquivo = new FileInfo(caminhoArquivo);
+        string nomeClassePaginna = "Pagina" + fiArquivo.Name.Replace(fiArquivo.Extension, "");
 
-        foreach (var tipo in this.TiposMime.Keys)
+        // INSTANCIANDO CLASSE A PARTIR DO NOME DELA - Begin
+
+        // Obtém referência para o tipo da página a partir do nome dessa classe da página
+        // - nomeClassePagina = nome da classe da página
+        // -  true (primeiro) -> indicando lançar exceção caso seja inexiste essa classe
+        // -  true (segundo) -> ignorar o caso (Case insensitive)
+        Type tipoPaginaDinamica = Type.GetType(nomeClassePaginna, true, true);
+        PaginaDinamica pd = Activator.CreateInstance(tipoPaginaDinamica) as PaginaDinamica;
+
+        // alimentar o HtmlModelo
+        pd.HtmlModelo = File.ReadAllText(caminhoArquivo);
+
+        switch (metodoHttp.ToLower())
         {
-
-            htmlGerado.Append($"<li>Arquivos com extensão {tipo}</li>");
-
+            case "get":
+                return pd.Get(parametros);
+            case "post":
+                return pd.Post(parametros);
+            default:
+                return new byte[0];
         }
-        
-        htmlGerado.Append("</ul>");
-*/
-        if (parametros.Count > 0)
-        {
 
-            htmlGerado.Append("<ul>");
+        // END - INSTANCIANDO CLASSE A PARTIR DO NOME DELA
 
-            foreach (var p in parametros)
-            {
-
-                htmlGerado.Append($"<li>{p.Key}={p.Value}</li>");
-
-            }
-            
-            htmlGerado.Append("</ul>");
-        }
-        else
-        {
-
-            htmlGerado.Append("<p>Nenhum parâmetro foi passado.</p>");
-
-        } // end  if (parametros.Count > 0)
-
-        string textoHtmlGerado = htmlModelo.Replace(coringa, htmlGerado.ToString());
-
-        return Encoding.UTF8.GetBytes(textoHtmlGerado, 0, textoHtmlGerado.Length);
     } // end public byte[] GerarHTMLDinamico(string caminhoArquivo)
 
     private SortedList<string, string> ProcessarParametros(string textoParametros)
